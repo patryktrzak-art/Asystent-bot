@@ -29,12 +29,12 @@ def run_health_check_server():
 
 def generate_ai_content(prompt: str) -> str:
     try:
-        response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
+        response = client.models.generate_content(model="gemini-2.0-flash", contents=prompt)
         return response.text
     except Exception as e:
         logger.error(f"Błąd Gemini: {e}")
         try:
-            response = client.models.generate_content(model="gemini-flash", contents=prompt)
+            response = client.models.generate_content(model="gemini-1.5-flash", contents=prompt)
             return response.text
         except Exception as e2:
             logger.error(f"Błąd zapasowy: {e2}")
