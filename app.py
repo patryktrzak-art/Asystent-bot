@@ -3,7 +3,7 @@ import os
 from threading import Thread
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from apscheduler.schedulers.background import BackgroundScheduler
-from google import genai
+import google.generativeai as genai
 from telegram import Update
 from telegram.ext import ApplicationBuilder, ContextTypes, MessageHandler, filters
 
@@ -14,7 +14,9 @@ TELEGRAM_TOKEN = "9156443262:AAHz5yAYZmo1KNhNbnh8PXP2RLzb5bxpqG8"
 GEMINI_API_KEY = "AQ.Ab8RN6Jddtu1H0apvHAdBvoVmzbUyeQ1fL_kV2_gi5wn2VIdaQ"
 CHAT_ID = 9121741673
 
-client = genai.Client(api_key=GEMINI_API_KEY)
+# Konfiguracja oficjalnego klienta Google
+genai.configure(api_key=GEMINI_API_KEY)
+model = genai.GenerativeModel('gemini-1.5-flash')
 
 class HealthCheckHandler(BaseHTTPRequestHandler):
     def do_GET(self):
@@ -29,16 +31,11 @@ def run_health_check_server():
 
 def generate_ai_content(prompt: str) -> str:
     try:
-        response = client.models.generate_content(model="gemini-2.0-flash", contents=prompt)
+        response = model.generate_content(prompt)
         return response.text
     except Exception as e:
         logger.error(f"Błąd Gemini: {e}")
-        try:
-            response = client.models.generate_content(model="gemini-1.5-flash", contents=prompt)
-            return response.text
-        except Exception as e2:
-            logger.error(f"Błąd zapasowy: {e2}")
-            return f"Błąd AI: {str(e)[:80]}"
+        return f"Błąd AI: {str(e)}"
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message and update.message.text:
