@@ -10,8 +10,8 @@ from telegram.ext import ApplicationBuilder, ContextTypes, MessageHandler, filte
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# Twoje dane uwierzytelniające
 TELEGRAM_TOKEN = "9156443262:AAHz5yAYZmo1KNhNbnh8PXP2RLzb5bxpqG8"
+# Jeśli masz klucz z AI Studio (zaczynający się od AIza...), wklej go tutaj:
 GEMINI_API_KEY = "AQ.Ab8RN6Jddtu1H0apvHAdBvoVmzbUyeQ1fL_kV2_gi5wn2VIdaQ"
 CHAT_ID = 9121741673
 
@@ -30,21 +30,16 @@ def run_health_check_server():
 
 def generate_ai_content(prompt: str) -> str:
     try:
-        response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
+        response = client.models.generate_content(model="gemini-1.5-flash", contents=prompt)
         return response.text
     except Exception as e:
-        logger.error(f"Blad Gemini flash: {e}")
-        try:
-            response = client.models.generate_content(model="gemini-flash", contents=prompt)
-            return response.text
-        except Exception as e2:
-            logger.error(f"Blad zapasowy: {e2}")
-            return "Cześć! Jestem Marcin, bot działa, ale miałem chwilowy problem z AI."
+        logger.error(f"Szczegóły błędu Gemini: {e}")
+        return f"Błąd AI: {str(e)[:100]}"
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message and update.message.text:
         user_message = update.message.text
-        logger.info(f"Otrzymano wiadomosc: {user_message}")
+        logger.info(f"Otrzymano wiadomość: {user_message}")
         
         reply_text = generate_ai_content(f"Jesteś pomocnym asystentem o imieniu Marcin. Odpowiedz krótko i naturalnie: {user_message}")
         await update.message.reply_text(reply_text)
