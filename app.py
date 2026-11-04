@@ -19,16 +19,16 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Wstaw swoje klucze
-TELEGRAM_TOKEN = "9156..."  # Twój token Telegrama
-GEMINI_API_KEY = "AQ.Ab8..."  # Twój klucz API Gemini
-CHAT_ID = 9121741673  # Twój Chat ID
+# --- UZUPEŁNIJ SWOJE DANE PONIŻEJ ---
+TELEGRAM_TOKEN = "TUTAJ_WPISZ_SWÓJ_PRAWDZIWY_TOKEN"
+GEMINI_API_KEY = "TUTAJ_WPISZ_SWÓJ_KLUCZ_GEMINI"
+CHAT_ID = TWÓJ_NUMER_CHAT_ID  # np. 123456789 (bez cudzysłowu, sama liczba)
 
 # Inicjalizacja klienta Gemini
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 
-# Prosty serwer WWW dla Rendera (żeby nie zgłaszał braku portu)
+# Prosty serwer WWW dla Rendera (żeby spełnić wymagania hostingu)
 class HealthCheckHandler(BaseHTTPRequestHandler):
   def do_GET(self):
     self.send_response(200)
@@ -116,4 +116,4 @@ def main():
 
 
 if __name__ == "__main__":
-  main() 
+  main()
