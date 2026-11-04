@@ -1,4 +1,3 @@
 python-telegram-bot
-google-genai
-apscheduler
-tzdata
+google-generativeai
+apscheduler 
