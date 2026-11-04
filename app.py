@@ -11,7 +11,6 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
 logger = logging.getLogger(__name__)
 
 TELEGRAM_TOKEN = "9156443262:AAHz5yAYZmo1KNhNbnh8PXP2RLzb5bxpqG8"
-# Jeśli masz klucz z AI Studio (zaczynający się od AIza...), wklej go tutaj:
 GEMINI_API_KEY = "AQ.Ab8RN6Jddtu1H0apvHAdBvoVmzbUyeQ1fL_kV2_gi5wn2VIdaQ"
 CHAT_ID = 9121741673
 
@@ -30,11 +29,16 @@ def run_health_check_server():
 
 def generate_ai_content(prompt: str) -> str:
     try:
-        response = client.models.generate_content(model="gemini-1.5-flash", contents=prompt)
+        response = client.models.generate_content(model="gemini-2.5-flash", contents=prompt)
         return response.text
     except Exception as e:
-        logger.error(f"Szczegóły błędu Gemini: {e}")
-        return f"Błąd AI: {str(e)[:100]}"
+        logger.error(f"Błąd Gemini: {e}")
+        try:
+            response = client.models.generate_content(model="gemini-flash", contents=prompt)
+            return response.text
+        except Exception as e2:
+            logger.error(f"Błąd zapasowy: {e2}")
+            return f"Błąd AI: {str(e)[:80]}"
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.message and update.message.text:
