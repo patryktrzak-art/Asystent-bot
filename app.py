@@ -17,9 +17,9 @@ logging.basicConfig(
 )
 
 # Konfiguracja klucza API Gemini
-genai.configure(api_key='AQ.Ab8RN6KJTHdl-LjfC2YObUmGaTj99wtl78k2AVSQ4FOFO1F-zA')
+genai.configure(api_key='AQ.Ab8RN6KJTHdl-LjfC2YObUmGaTj99wtl78k2AVSQ4FoFO1F-zA')
 
-# Inicjalizacja modelu Gemini (używamy szybkiego i wydajnego modelu flash)
+# Inicjalizacja modelu Gemini
 model = genai.GenerativeModel('gemini-1.5-flash')
 
 
@@ -37,7 +37,6 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     # Wysyłanie zapytania do Gemini
     response = model.generate_content(user_message)
     # Odesłanie odpowiedzi bota na Telegram
-    await update.message.reply_text(response.text)
   except Exception as e:
     logging.error(f'Błąd podczas generowania odpowiedzi: {e}')
     await update.message.reply_text(
@@ -46,9 +45,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 
 def main():
-  # Token Twojego bota z Telegrama (najlepiej pobierać go ze zmiennych środowiskowych Render,
-  # ale jeśli wolisz, możesz też wpisać go tutaj w cudzysłowie)
-  telegram_token = os.getenv('TELEGRAM_BOT_TOKEN', 'TUTAJ_WPISZ_TOKEN_TELEGRAM')
+  # Token Twojego bota z Telegrama
+  telegram_token = '9156443262:AAHz5yAYZmo1KNhNbnh8PXP2RLzb5bxpqG8'
 
   # Tworzenie aplikacji bota
   app = ApplicationBuilder().token(telegram_token).build()
