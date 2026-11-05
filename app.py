@@ -1,55 +1,69 @@
 import logging
 import os
-from threading import Thread
-from http.server import HTTPServer, BaseHTTPRequestHandler
-import vertexai
-from vertexai.generative_models import GenerativeModel
 from telegram import Update
-from telegram.ext import ApplicationBuilder, ContextTypes, MessageHandler, filters
+from telegram.ext import (
+    ApplicationBuilder,
+    CommandHandler,
+    ContextTypes,
+    MessageHandler,
+    filters,
+)
+import google.generativeai as genai
 
-logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
-logger = logging.getLogger(__name__)
+# Konfiguracja logowania, aby widzieć co się dzieje w konsoli Render.com
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO,
+)
 
-TELEGRAM_TOKEN = "9156443262:AAHz5yAYZmo1KNhNbnh8PXP2RLzb5bxpqG8"
+# Konfiguracja klucza API Gemini
+genai.configure(api_key='AQ.Ab8RN6KJTHdl-LjfC2YObUmGaTj99wtl78k2AVSQ4FOFO1F-zA')
 
-vertexai.init(project="786395043766", location="us-central1")
-model = GenerativeModel("gemini-1.5-flash")
+# Inicjalizacja modelu Gemini (używamy szybkiego i wydajnego modelu flash)
+model = genai.GenerativeModel('gemini-1.5-flash')
 
-class HealthCheckHandler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        self.send_response(200)
-        self.end_headers()
-        self.wfile.write(b"Bot Marcin dziala!")
 
-def run_health_check_server():
-    port = int(os.environ.get("PORT", 10000))
-    server = HTTPServer(("0.0.0.0", port), HealthCheckHandler)
-    server.serve_forever()
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+  """Obsługa komendy /start"""
+  await update.message.reply_text(
+      'Cześć! Jestem gotowy do działania. Napisz do mnie cokolwiek!'
+  )
 
-def generate_ai_content(prompt: str) -> str:
-    try:
-        response = model.generate_content(prompt)
-        return response.text
-    except Exception as e:
-        logger.error(f"Błąd Vertex AI: {e}")
-        return f"Błąd AI: {str(e)[:100]}"
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.message and update.message.text:
-        user_message = update.message.text
-        logger.info(f"Otrzymano wiadomość: {user_message}")
-        
-        reply_text = generate_ai_content(f"Jesteś pomocnym asystentem o imieniu Marcin. Odpowiedz krótko i naturalnie: {user_message}")
-        await update.message.reply_text(reply_text)
+  """Obsługa każdej wiadomości tekstowej od użytkownika"""
+  user_message = update.message.text
+  try:
+    # Wysyłanie zapytania do Gemini
+    response = model.generate_content(user_message)
+    # Odesłanie odpowiedzi bota na Telegram
+    await update.message.reply_text(response.text)
+  except Exception as e:
+    logging.error(f'Błąd podczas generowania odpowiedzi: {e}')
+    await update.message.reply_text(
+        'Przepraszam, wystąpił problem z przetworzeniem Twojej wiadomości.'
+    )
+
 
 def main():
-    Thread(target=run_health_check_server, daemon=True).start()
-    
-    application = ApplicationBuilder().token(TELEGRAM_TOKEN).build()
-    application.add_handler(MessageHandler(filters.TEXT, handle_message))
-    
-    logger.info("Uruchomiono polling bota...")
-    application.run_polling()
+  # Token Twojego bota z Telegrama (najlepiej pobierać go ze zmiennych środowiskowych Render,
+  # ale jeśli wolisz, możesz też wpisać go tutaj w cudzysłowie)
+  telegram_token = os.getenv('TELEGRAM_BOT_TOKEN', 'TUTAJ_WPISZ_TOKEN_TELEGRAM')
 
-if __name__ == "__main__":
-    main()
+  # Tworzenie aplikacji bota
+  app = ApplicationBuilder().token(telegram_token).build()
+
+  # Rejestrowanie handlerów
+  app.add_handler(CommandHandler('start', start))
+  app.add_handler(
+      MessageHandler(filters.TEXT & (~filters.COMMAND), handle_message)
+  )
+
+  print('Bot został uruchomiony i nasłuchuje...')
+
+  # Uruchomienie bota w pętli ciągłej (Polling)
+  app.run_polling()
+
+
+if __name__ == '__main__':
+  main()
